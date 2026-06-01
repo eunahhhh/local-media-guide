@@ -450,6 +450,7 @@
     <div class="progress-seg"><span class="seg-num">2</span> 실행 권한</div>
     <div class="progress-seg"><span class="seg-num">3</span> Automator 설정</div>
     <div class="progress-seg"><span class="seg-num">4</span> 동작 확인</div>
+    <div class="progress-seg"><span class="seg-num">✨</span> 커스터마이징</div>
   </div>
 </div>
 
@@ -485,7 +486,8 @@
         <div class="step-card-title">매체정리 폴더 확인</div>
       </div>
       <div class="step-card-body">
-        <p>스크립트 실행 시 바탕화면에 <strong>매체정리</strong> 폴더가 자동 생성됩니다. 미리 만들 필요는 없어요.</p>
+        <p>바탕화면에 <strong>매체정리</strong> 폴더를 직접 만들어주세요. Automator가 이 폴더를 감시하려면 폴더가 미리 존재해야 합니다.</p>
+        <p>Finder에서 바탕화면 우클릭 → <strong>새로운 폴더</strong> → 이름을 <strong>매체정리</strong> 로 입력하면 됩니다.</p>
         <p>파일을 넣으면 아래처럼 자동으로 분류됩니다.</p>
         <div class="folder-visual">
 <span class="folder">📁 매체정리/</span>
@@ -782,6 +784,134 @@
 
   </div>
 
+  <!-- SECTION 5 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num" style="background:#534AB7; font-size:20px;">✨</div>
+      <div>
+        <div class="section-title">스크립트 커스터마이징</div>
+        <div class="section-desc">매체 추가 및 용량 제한 설정 방법</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge" style="background:#534AB7;">매체 추가</div>
+        <div class="step-card-title">새로운 매체사 분류 폴더 추가하기</div>
+      </div>
+      <div class="step-card-body">
+        <p><strong>run_all.sh</strong> 파일을 텍스트 편집기로 열고 (우클릭 → 응용 프로그램으로 열기 → 텍스트 편집기) 7번째 줄을 찾습니다.</p>
+        <div class="code-wrap">
+          <div class="code-block"><span class="comment"># 수정 전 — 기존 매체 목록</span>
+<span class="flag">MEDIA_LIST</span>=(<span style="color:#f9a8d4;">"Meta" "Google" "Kakao" "Naver" "Youtube" "TikTok" "Coupang"</span>)
+
+<span class="comment"># 수정 후 — Moloco, Criteo 추가 예시</span>
+<span class="flag">MEDIA_LIST</span>=(<span style="color:#f9a8d4;">"Meta" "Google" "Kakao" "Naver" "Youtube" "TikTok" "Coupang" "Moloco" "Criteo"</span>)</div>
+          <button class="copy-btn" onclick="copyCode(this, 'MEDIA_LIST=(&quot;Meta&quot; &quot;Google&quot; &quot;Kakao&quot; &quot;Naver&quot; &quot;Youtube&quot; &quot;TikTok&quot; &quot;Coupang&quot; &quot;Moloco&quot; &quot;Criteo&quot;)')">복사</button>
+        </div>
+        <div class="note info">
+          <span class="note-icon">💡</span>
+          <span>파일명에 대소문자 구분 없이 매체명이 포함되면 자동 분류돼요. 예: <span class="inline-code">moloco_배너.jpg</span> → Moloco 폴더로 이동</span>
+        </div>
+        <div class="note warn">
+          <span class="note-icon">⚠️</span>
+          <span>매체명을 추가한 뒤에는 <strong>반드시 저장</strong>해야 적용됩니다. 저장 후 다음 파일 감지 시점부터 새 매체가 인식돼요.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge" style="background:#534AB7;">용량 제한</div>
+        <div class="step-card-title">특정 매체 용량 압축 설정 추가하기</div>
+      </div>
+      <div class="step-card-body">
+        <p>현재는 <strong>Kakao만 500KB</strong> 압축이 적용돼 있어요. 다른 매체에도 용량 제한을 추가하려면 스크립트 하단에 아래 블록을 복사해서 붙여넣고 <span class="inline-code">폴더명</span>과 <span class="inline-code">용량</span>만 바꾸면 됩니다.</p>
+
+        <p style="margin-top:14px;"><strong>① 파일 상단 — 용량 변수 추가</strong></p>
+        <div class="code-wrap">
+          <div class="code-block"><span class="comment"># 기존 Kakao 용량 변수 아래에 추가</span>
+<span class="flag">KAKAO_SIZE_LIMIT</span>=$((500 * 1024))   <span class="comment"># 기존 500KB</span>
+<span class="flag">META_SIZE_LIMIT</span>=$((1024 * 1024))   <span class="comment"># 추가: Meta 1MB</span>
+<span class="flag">NAVER_SIZE_LIMIT</span>=$((800 * 1024))   <span class="comment"># 추가: Naver 800KB</span></div>
+          <button class="copy-btn" onclick="copyCode(this, 'META_SIZE_LIMIT=$((1024 * 1024))\nNAVER_SIZE_LIMIT=$((800 * 1024))')">복사</button>
+        </div>
+
+        <p style="margin-top:16px;"><strong>② 파일 하단 — 압축 실행 블록 추가</strong></p>
+        <p>아래 순서대로 따라하세요. <strong>Meta를 1MB로 압축</strong>하는 예시입니다.</p>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin:12px 0 0;">
+          <div style="display:flex;gap:12px;align-items:flex-start;background:#fafaf8;border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+            <div style="min-width:24px;height:24px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">1</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:4px;">run_all.sh 파일을 텍스트 편집기로 열기</div>
+              <div style="font-size:13px;color:var(--text-muted);">파일 우클릭 → <strong>응용 프로그램으로 열기</strong> → <strong>텍스트 편집기</strong></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;background:#fafaf8;border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+            <div style="min-width:24px;height:24px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">2</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:4px;">파일 맨 마지막 줄 찾기</div>
+              <div style="font-size:13px;color:var(--text-muted);">스크롤을 맨 아래로 내리면 <span class="inline-code">echo "✅ 모든 작업 완료!"</span> 줄이 보입니다. 바로 <strong>그 윗줄</strong>에 커서를 놓으세요.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;background:#fafaf8;border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+            <div style="min-width:24px;height:24px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">3</div>
+            <div style="width:100%;">
+              <div style="font-size:13px;font-weight:700;margin-bottom:4px;">아래 코드 복사 후 그 자리에 붙여넣기</div>
+              <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">코드 내용은 몰라도 돼요. 붙여넣은 뒤 <span style="background:#fdf4ff;color:#c026d3;border:1px solid #e9d5ff;border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:11px;">Meta</span> 와 <span style="background:#fdf4ff;color:#c026d3;border:1px solid #e9d5ff;border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:11px;">META_SIZE_LIMIT</span> 두 곳만 원하는 매체명으로 바꾸세요.</div>
+              <div class="code-wrap" style="margin:0;">
+                <div class="code-block"><span class="comment"># Meta 폴더 용량 압축</span>
+echo ""
+echo "📏 <span style="color:#f9a8d4;">Meta</span> 용량 압축 시작..."
+<span class="flag">META_FOLDER</span>="$WATCH_FOLDER/<span style="color:#f9a8d4;">Meta</span>"
+for FILE in "$META_FOLDER"/*; do
+  [ -f "$FILE" ] || continue
+  FILENAME=$(basename "$FILE")
+  [[ "$FILENAME" == .* ]] && continue
+  case "${FILENAME##*.}" in
+    jpg|jpeg|JPG|JPEG) FORMAT="jpeg" ;;
+    png|PNG) FORMAT="png" ;;
+    *) continue ;;
+  esac
+  FILESIZE=$(stat -f%z "$FILE")
+  if [ "$FILESIZE" -gt "$<span style="color:#f9a8d4;">META_SIZE_LIMIT</span>" ]; then
+    echo "압축 중: $FILENAME"
+    QUALITY=85
+    while [ "$FILESIZE" -gt "$<span style="color:#f9a8d4;">META_SIZE_LIMIT</span>" ] && [ "$QUALITY" -gt 10 ]; do
+      sips -s format $FORMAT -s formatOptions $QUALITY "$FILE" --out "$FILE" &>/dev/null
+      FILESIZE=$(stat -f%z "$FILE")
+      QUALITY=$((QUALITY - 10))
+    done
+    echo "✅ 압축 완료: $FILENAME"
+  else
+    echo "✅ 용량 적합: $FILENAME"
+  fi
+done</div>
+                <button class="copy-btn copy-block-btn">복사</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;background:#fafaf8;border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+            <div style="min-width:24px;height:24px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">4</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:4px;">저장하기</div>
+              <div style="font-size:13px;color:var(--text-muted);"><kbd>⌘</kbd> + <kbd>S</kbd> 로 저장하면 완료!</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note success" style="margin-top:12px;">
+          <span class="note-icon">✅</span>
+          <span>매체를 추가할 때마다 이 4단계를 반복하면 돼요. 코드 내용은 몰라도 되고, 분홍색 <span style="background:#fdf4ff;color:#c026d3;border:1px solid #e9d5ff;border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:11px;">Meta</span> 와 <span style="background:#fdf4ff;color:#c026d3;border:1px solid #e9d5ff;border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:11px;">META_SIZE_LIMIT</span> 두 곳만 바꾸면 끝!</span>
+        </div>
+
+
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
 <script>
@@ -789,12 +919,21 @@ function copyCode(btn, text) {
   navigator.clipboard.writeText(text).then(() => {
     btn.textContent = '복사됨 ✓';
     btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = '복사';
-      btn.classList.remove('copied');
-    }, 1800);
+    setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('copied'); }, 1800);
   });
 }
+
+document.querySelectorAll('.copy-block-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const block = this.closest('.code-wrap').querySelector('.code-block');
+    const text = block.innerText || block.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      this.textContent = '복사됨 ✓';
+      this.classList.add('copied');
+      setTimeout(() => { this.textContent = '복사'; this.classList.remove('copied'); }, 1800);
+    });
+  });
+});
 </script>
 </body>
 </html>
