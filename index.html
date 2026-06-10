@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>매체사 자동 분류 — 설치 가이드</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: #e4e2da;
+    --border-strong: #c8c5bb;
+    --text: #1a1917;
+    --text-muted: #6b6860;
+    --text-hint: #9e9c95;
+    --accent: #1a6b3c;
+    --accent-light: #e8f5ee;
+    --accent-mid: #2d9455;
+    --blue: #1a4a8a;
+    --blue-light: #e8eef8;
+    --amber: #7a4a0a;
+    --amber-light: #fef3e2;
+    --red: #8a1a1a;
+    --red-light: #fdeaea;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Noto Sans KR', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .page-header {
+    background: var(--text);
+    color: #fff;
+    padding: 48px 40px 40px;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 20px;
+  }
+
+  .header-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .header-sub {
+    font-size: 15px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 400;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 0;
+    margin-top: 32px;
+  }
+
+  .progress-seg {
+    flex: 1;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    border-left: 1px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .progress-seg:first-child { border-left: none; }
+  .progress-seg:hover { color: rgba(255,255,255,0.9); }
+  .progress-seg .seg-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .main { max-width: 760px; margin: 0 auto; padding: 48px 32px; }
+
+  .section { margin-bottom: 56px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--text); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .section-num.green { background: var(--accent); }
+  .section-num.blue { background: var(--blue); }
+
+  .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .section-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .step-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: #fafaf8;
+  }
+
+  .step-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: var(--text);
+    color: #fff;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+
+  .step-badge.green { background: var(--accent); }
+  .step-badge.blue { background: var(--blue); }
+
+  .step-card-title { font-size: 14px; font-weight: 700; }
+  .step-card-body { padding: 18px 20px; }
+  .step-card-body p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 12px; }
+  .step-card-body p:last-child { margin-bottom: 0; }
+  .step-card-body strong { color: var(--text); font-weight: 700; }
+
+  .code-wrap { position: relative; margin: 12px 0; }
+
+  .code-block {
+    background: #1a1917;
+    color: #e8e6e0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .code-block .comment { color: #6b6860; }
+  .code-block .cmd { color: #4ade80; }
+  .code-block .path { color: #93c5fd; }
+  .code-block .flag { color: #fbbf24; }
+
+  .copy-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+  .copy-btn.copied { background: rgba(74,222,128,0.2); border-color: rgba(74,222,128,0.4); color: #4ade80; }
+
+  .note {
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .note.info { background: var(--blue-light); color: var(--blue); border: 1px solid #c5d5ef; }
+  .note.warn { background: var(--amber-light); color: var(--amber); border: 1px solid #f0d5a0; }
+  .note.success { background: var(--accent-light); color: var(--accent); border: 1px solid #b0dfc0; }
+  .note.danger { background: var(--red-light); color: var(--red); border: 1px solid #f0c0c0; }
+  .note-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+  .folder-visual {
+    background: #fafaf8;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 2;
+    margin: 12px 0;
+    color: var(--text-muted);
+  }
+
+  .folder-visual .folder { color: var(--text); font-weight: 500; }
+  .folder-visual .highlight { color: var(--accent); font-weight: 500; }
+  .folder-visual .note-inline { color: var(--text-hint); font-size: 12px; }
+
+  .automator-screen {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 12px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .window-bar {
+    background: #ececec;
+    border-bottom: 1px solid #d4d4d4;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .win-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .win-title {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+    margin-left: 8px;
+    font-family: var(--sans);
+  }
+
+  .window-body {
+    background: #f5f5f5;
+    padding: 20px;
+  }
+
+  .doc-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .doc-type-card {
+    background: #fff;
+    border: 1.5px solid #d4d4d4;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    font-family: var(--sans);
+  }
+
+  .doc-type-card.selected {
+    border-color: #0064d3;
+    background: #f0f6ff;
+    color: #0064d3;
+    font-weight: 700;
+  }
+
+  .doc-type-icon { font-size: 26px; margin-bottom: 6px; display: block; }
+
+  .automator-action {
+    background: #fff;
+    border: 1px solid #d4d4d4;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--sans);
+    margin-bottom: 8px;
+  }
+
+  .action-icon-box {
+    width: 36px; height: 36px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .action-label { font-size: 13px; font-weight: 700; color: #1a1917; }
+  .action-sub { font-size: 11px; color: #888; margin-top: 2px; }
+
+  .folder-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #d4d4d4;
+    border-radius: 7px;
+    padding: 8px 12px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+
+  .flow-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    min-width: 110px;
+    flex-shrink: 0;
+  }
+
+  .flow-node .flow-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .flow-node.active { background: var(--accent-light); border-color: var(--accent-mid); color: var(--accent); }
+
+  .flow-arrow {
+    color: var(--text-hint);
+    font-size: 18px;
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+
+  .checklist { list-style: none; margin: 10px 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    word-break: keep-all;
+    white-space: normal;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist .check { color: var(--accent); font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+
+  .naming-examples {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .naming-card {
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+    font-family: var(--mono);
+    line-height: 1.8;
+  }
+
+  .naming-card.good { background: var(--accent-light); border: 1px solid #b0dfc0; }
+  .naming-card.bad { background: var(--red-light); border: 1px solid #f0c0c0; }
+  .naming-card .card-label { font-family: var(--sans); font-weight: 700; font-size: 11px; margin-bottom: 6px; display: block; }
+  .naming-card.good .card-label { color: var(--accent); }
+  .naming-card.bad .card-label { color: var(--red); }
+  .naming-card.good { color: var(--accent); }
+  .naming-card.bad { color: var(--red); }
+
+  .final-card {
+    background: var(--text);
+    color: #fff;
+    border-radius: 14px;
+    padding: 28px 32px;
+    text-align: center;
+  }
+
+  .final-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .final-card p { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.7; }
+  .final-card .final-icon { font-size: 40px; margin-bottom: 16px; display: block; }
+
+  kbd {
+    display: inline-block;
+    background: #f0ede8;
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .inline-code {
+    background: #f0ede8;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  @media print {
+    .copy-btn { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="header-badge">
+    <div class="dot"></div>
+    macOS 자동화 가이드
+  </div>
+  <h1>매체사 자동 분류 스크립트 설치 & 자동화</h1>
+  <p class="header-sub">run_all.sh 설치부터 Automator 폴더 감시까지 — 한 번만 설정하면 끝</p>
+  <div class="progress-bar">
+    <div class="progress-seg"><span class="seg-num">1</span> 스크립트 준비</div>
+    <div class="progress-seg"><span class="seg-num">2</span> 실행 권한</div>
+    <div class="progress-seg"><span class="seg-num">3</span> Automator 설정</div>
+    <div class="progress-seg"><span class="seg-num">4</span> 동작 확인</div>
+    <div class="progress-seg"><span class="seg-num">✨</span> 커스터마이징</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-title">스크립트 파일 준비</div>
+        <div class="section-desc">run_all.sh 파일을 Script 폴더에 저장합니다</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge">STEP 1</div>
+        <div class="step-card-title">매체정리 폴더 생성 후 파일 다운로드</div>
+      </div>
+      <div class="step-card-body">
+        <p>바탕화면에 <strong>매체정리</strong> 폴더를 만들고, 그 안에 <strong>_설정</strong> 폴더를 만들어주세요.</p>
+        <p style="margin-top:10px;">그 다음 아래 버튼을 눌러 두 파일을 다운로드한 뒤 <strong>_설정 폴더 안</strong>에 넣어주세요.</p>
+        <div style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap;">
+          <a href="run_all.sh" download style="display:inline-flex;align-items:center;gap:8px;background:var(--text);color:#fff;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:500;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+            ⬇️ &nbsp;run_all.sh 다운로드
+          </a>
+          <a href="config.txt" download style="display:inline-flex;align-items:center;gap:8px;background:#534AB7;color:#fff;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:500;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+            ⬇️ &nbsp;config.txt 다운로드
+          </a>
+        </div>
+        <div class="folder-visual">
+📁 바탕화면/
+└── 📁 매체정리/
+    └── 📁 <span class="highlight">_설정/</span>
+        ├── <span class="highlight">run_all.sh</span>    <span class="note-inline">← 절대 삭제 금지!</span>
+        └── <span class="highlight">config.txt</span>    <span class="note-inline">← 절대 삭제 금지!</span>
+        </div>
+        <div class="note danger">
+          <span class="note-icon">🚫</span>
+          <span><strong>run_all.sh</strong>와 <strong>config.txt</strong>는 절대 삭제하면 안 돼요! 두 파일이 있어야 자동 분류가 작동해요.</span>
+        </div>
+        <div class="note info">
+          <span class="note-icon">💡</span>
+          <span><strong>바탕화면이 아닌 다른 경로에 만들고 싶다면?</strong> 폴더 위치는 어디든 괜찮아요. 단, 위치를 바꿨다면 Step 4(권한 부여)와 Step 9(Automator 명령어)의 경로를 실제 경로로 수정해야 해요.<br><br>
+          예: 문서 폴더에 만든 경우<br>
+          <span style="font-family:var(--mono);font-size:12px;">chmod +x ~/Documents/매체정리/_설정/run_all.sh</span><br>
+          <span style="font-family:var(--mono);font-size:12px;">bash ~/Documents/매체정리/_설정/run_all.sh</span><br><br>
+          또한 <strong>run_all.sh</strong> 파일을 텍스트 편집기로 열어 첫 줄의 경로도 수정해야 해요.<br>
+          <span style="font-family:var(--mono);font-size:12px;">WATCH_FOLDER="$HOME/Documents/매체정리"</span>
+          </span>
+        </div>
+        <div class="note warn">
+          <span class="note-icon">⚠️</span>
+          <span><strong>config.txt</strong>는 담당 매체에 맞게 수정해서 써야 해요. ✨ 커스터마이징 탭에서 수정 방법을 확인하세요.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge">STEP 2</div>
+        <div class="step-card-title">파일명 규칙 확인</div>
+      </div>
+      <div class="step-card-body">
+        <p>파일을 매체정리 폴더에 넣으면 아래처럼 매체별로 자동 분류됩니다. <strong>파일명에 매체사 이름이 포함되어야</strong> 자동 분류돼요.</p>
+        <div class="naming-examples">
+          <div class="naming-card good">
+            <span class="card-label">✅ 분류되는 파일명</span>
+            Meta_배너_v2.jpg
+            google_영상광고.png
+            Kakao_상품_최종.jpg
+            TikTok_15s_소재.png
+          </div>
+          <div class="naming-card bad">
+            <span class="card-label">❌ 미분류로 남는 파일명</span>
+            광고소재_v2.jpg
+            최종본_수정.png
+            배너_2차검토.jpg
+            upload_230501.png
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num green">2</div>
+      <div>
+        <div class="section-title">실행 권한 부여 (최초 1회)</div>
+        <div class="section-desc">macOS는 새 스크립트를 바로 실행할 수 없어서 권한을 먼저 줘야 합니다</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge green">STEP 3</div>
+        <div class="step-card-title">터미널 열기</div>
+      </div>
+      <div class="step-card-body">
+        <p><kbd>⌘</kbd> + <kbd>Space</kbd> 를 눌러 Spotlight를 열고 <strong>터미널</strong>을 검색 후 엔터</p>
+        <div class="note info">
+          <span class="note-icon">💡</span>
+          <span>이후 Automator 설정이 완료되면 터미널을 다시 쓸 일은 없어요. 이번 한 번만!</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge green">STEP 4</div>
+        <div class="step-card-title">권한 부여 명령어 실행</div>
+      </div>
+      <div class="step-card-body">
+        <p>터미널에 아래 명령어를 복사해서 붙여넣기 후 엔터를 누르세요.</p>
+        <div class="code-wrap">
+          <div class="code-block"><span class="comment"># 실행 권한 부여</span>
+<span class="cmd">chmod</span> <span class="flag">+x</span> <span class="path">~/Desktop/매체정리/_설정/run_all.sh</span></div>
+          <button class="copy-btn" onclick="copyCode(this, 'chmod +x ~/Desktop/매체정리/_설정/run_all.sh')">복사</button>
+        </div>
+        <p>아무 반응이 없으면 정상입니다. 에러가 없으면 성공!</p>
+        <div class="note warn">
+          <span class="note-icon">⚠️</span>
+          <span>매체정리 폴더 위치가 다르면 경로를 맞게 바꿔주세요.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num blue">3</div>
+      <div>
+        <div class="section-title">Automator 폴더 감시 설정</div>
+        <div class="section-desc">파일이 매체정리 폴더에 들어오면 자동으로 스크립트가 실행됩니다</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge blue">STEP 5</div>
+        <div class="step-card-title">Automator 열기</div>
+      </div>
+      <div class="step-card-body">
+        <p><kbd>⌘</kbd> + <kbd>Space</kbd> → <strong>Automator</strong> 검색 → 엔터</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge blue">STEP 6</div>
+        <div class="step-card-title">문서 유형 — "폴더 적용 스크립트" 선택</div>
+      </div>
+      <div class="step-card-body">
+        <p>새 문서 창이 열리면 <strong>폴더 적용 스크립트</strong>를 선택하고 "선택" 버튼을 클릭합니다.</p>
+        <div class="automator-screen">
+          <div class="window-bar">
+            <div class="win-dot" style="background:#FF5F57"></div>
+            <div class="win-dot" style="background:#FFBD2E"></div>
+            <div class="win-dot" style="background:#28CA41"></div>
+            <div class="win-title">Automator — 새 문서</div>
+          </div>
+          <div class="window-body">
+            <div class="doc-type-grid">
+              <div class="doc-type-card">
+                <span class="doc-type-icon">▶️</span>
+                워크플로우
+              </div>
+              <div class="doc-type-card selected">
+                <span class="doc-type-icon">📁</span>
+                폴더 적용 스크립트 ← 선택
+              </div>
+              <div class="doc-type-card">
+                <span class="doc-type-icon">🔔</span>
+                캘린더 알림
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge blue">STEP 7</div>
+        <div class="step-card-title">감시할 폴더 지정</div>
+      </div>
+      <div class="step-card-body">
+        <p>오른쪽 상단에 <strong>폴더 선택</strong> 클릭 후 <strong>기타</strong>를 선택해서 바탕화면의 <strong>매체정리</strong> 폴더를 직접 선택하세요.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge blue">STEP 8</div>
+        <div class="step-card-title">"셸 스크립트 실행" 동작 추가</div>
+      </div>
+      <div class="step-card-body">
+        <p>왼쪽 항목 중 <strong>셸 스크립트 실행</strong> 항목을 찾아 오른쪽 영역으로 드래그 또는 더블 클릭 합니다.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge blue">STEP 9</div>
+        <div class="step-card-title">스크립트 명령어 입력</div>
+      </div>
+      <div class="step-card-body">
+        <p>추가된 동작 안의 텍스트 입력창에 기존 내용(<strong>cat</strong>)을 모두 지우고 아래 명령어를 붙여넣습니다.</p>
+        <div class="code-wrap">
+          <div class="code-block"><span class="cmd">bash</span> <span class="path">~/Desktop/매체정리/_설정/run_all.sh</span></div>
+          <button class="copy-btn" onclick="copyCode(this, 'bash ~/Desktop/매체정리/_설정/run_all.sh')">복사</button>
+        </div>
+        <div class="note warn">
+          <span class="note-icon">⚠️</span>
+          <span>매체정리 폴더 위치가 다르면 경로를 맞게 수정하세요.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge blue">STEP 10</div>
+        <div class="step-card-title">저장하기</div>
+      </div>
+      <div class="step-card-body">
+        <p><kbd>⌘</kbd> + <kbd>S</kbd> 를 눌러 저장합니다. 파일명은 <strong>매체정리_자동실행</strong> 으로 입력하세요.</p>
+        <div class="note success">
+          <span class="note-icon">✅</span>
+          <span>저장하는 순간 폴더 감시가 자동으로 활성화됩니다. 앞으로는 Automator를 다시 열 필요가 없어요!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div>
+        <div class="section-title">동작 확인 & 주의사항</div>
+        <div class="section-desc">설정 완료 후 이렇게 동작합니다</div>
+      </div>
+    </div>
+
+    <div class="flow-diagram">
+      <div class="flow-node">
+        <span class="flow-icon">📂</span>
+        파일을 매체정리<br>폴더에 넣음
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <span class="flow-icon">👁️</span>
+        Automator가<br>자동 감지
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <span class="flow-icon">⚙️</span>
+        run_all.sh<br>자동 실행
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node active">
+        <span class="flow-icon">✅</span>
+        매체별 폴더로<br>분류 완료
+      </div>
+    </div>
+
+    <div class="step-card" style="margin-top: 20px;">
+      <div class="step-card-header">
+        <div class="step-badge">테스트</div>
+        <div class="step-card-title">이렇게 테스트해보세요</div>
+      </div>
+      <div class="step-card-body">
+        <ul class="checklist">
+          <li><span class="check">①</span> 파일명에 <strong>Meta</strong>가 포함된 이미지를 하나 준비</li>
+          <li><span class="check">②</span> 바탕화면의 <strong>매체정리</strong> 폴더 안에 직접 드래그</li>
+          <li><span class="check">③</span> 잠시 후 <strong>Meta 폴더</strong> 안으로 자동 이동되는지 확인</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge" style="background:#8a1a1a;">주의사항</div>
+        <div class="step-card-title">알아두면 좋은 것들</div>
+      </div>
+      <div class="step-card-body">
+        <ul class="checklist">
+          <li><span class="check">📌</span><span>Automator 폴더 감시는 <strong>매체정리 폴더</strong>에 직접 넣을 때만 동작합니다. 다른 폴더에서는 반응을 하지 않아요.</span></li>
+          <li><span class="check">📌</span><span>해당 가이드는 <strong>jpg, jpeg, png</strong> 파일만 지원합니다. gif, mp4 등은 건너뜁니다.</span></li>
+          <li><span class="check">📌</span><span>재부팅 후에도 Automator 폴더 감시는 <strong>자동으로 유지</strong>됩니다.</span></li>
+          <li><span class="check">📌</span><span>처음 실행 시 macOS가 <strong>자동화 허용</strong> 팝업을 보여줄 수 있어요. "허용"을 눌러주세요.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="final-card" style="margin-top: 32px;">
+      <span class="final-icon">🎉</span>
+      <h3>설정 완료!</h3>
+      <p>이제 매체정리 폴더에 파일을 넣으면<br>자동으로 분류됩니다. 터미널은 다시 안 써도 돼요.</p>
+    </div>
+
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num" style="background:#534AB7; font-size:20px;">✨</div>
+      <div>
+        <div class="section-title">내 담당 매체로 커스터마이징</div>
+        <div class="section-desc">config.txt 파일 하나만 수정하면 끝!</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge" style="background:#534AB7;">구조 안내</div>
+        <div class="step-card-title">이제 스크립트를 직접 수정할 필요 없어요</div>
+      </div>
+      <div class="step-card-body">
+        <p>매체정리 폴더 안에 있는 <strong>config.txt</strong> 파일은 매체 추가, 용량 설정을 아주 쉽게 할 수 있어요.</p>
+        <div class="folder-visual">
+📁 매체정리/
+├── <span class="highlight">config.txt</span>     <span class="note-inline">← 여기만 수정!</span>
+├── run_all.sh     <span class="note-inline">← 건드릴 필요 없음</span>
+├── 📁 Meta/
+├── 📁 Naver/
+└── 📁 기타/
+        </div>
+        <div class="note info">
+          <span class="note-icon">💡</span>
+          <span>팀원마다 자신의 <strong>config.txt</strong>만 담당 매체에 맞게 바꾸면 돼요. run_all.sh는 모두 동일하게 공유해서 써요.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge" style="background:#534AB7;">매체 추가</div>
+        <div class="step-card-title">담당 매체 추가하기</div>
+      </div>
+      <div class="step-card-body">
+        <p>config.txt를 텍스트 편집기로 열고 <strong>MEDIA=</strong> 줄에 담당 매체를 쉼표로 추가하면 돼요.</p>
+        <div class="code-wrap">
+          <div class="code-block"><span class="comment"># 수정 전</span>
+<span class="flag">MEDIA</span>=<span style="color:#f9a8d4;">Meta,Google,Kakao,Naver</span>
+
+<span class="comment"># 수정 후 — Moloco 추가</span>
+<span class="flag">MEDIA</span>=<span style="color:#f9a8d4;">Meta,Google,Kakao,Naver,Moloco</span></div>
+          <button class="copy-btn copy-block-btn">복사</button>
+        </div>
+        <div class="note warn">
+          <span class="note-icon">⚠️</span>
+          <span>파일명에 매체명이 포함되어야 자동 분류돼요. 예: <span class="inline-code">Moloco_배너.jpg</span> → Moloco 폴더로 이동</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge" style="background:#534AB7;">전체 용량</div>
+        <div class="step-card-title">매체 전체 용량 제한 추가하기</div>
+      </div>
+      <div class="step-card-body">
+        <p>특정 매체의 모든 파일에 동일한 용량을 적용하려면 아래 형식으로 한 줄 추가하면 돼요.</p>
+        <div class="code-wrap">
+          <div class="code-block"><span class="comment"># 형식: 매체명:용량KB</span>
+Kakao:<span style="color:#f9a8d4;">500</span>       <span class="comment"># Kakao 전체 500KB 이하</span>
+Moloco:<span style="color:#f9a8d4;">1024</span>     <span class="comment"># Moloco 전체 1MB 이하</span></div>
+          <button class="copy-btn copy-block-btn">복사</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge" style="background:#534AB7;">사이즈별 용량</div>
+        <div class="step-card-title">매체 내 사이즈별 용량 제한 추가하기</div>
+      </div>
+      <div class="step-card-body">
+        <p>같은 매체 안에서도 사이즈마다 다른 용량을 적용하려면 아래 형식으로 추가하면 돼요.</p>
+        <div class="code-wrap">
+          <div class="code-block"><span class="comment"># 형식: 매체명:사이즈:용량KB</span>
+Naver:<span style="color:#f9a8d4;">1200x628</span>:<span style="color:#93c5fd;">500</span>      <span class="comment"># Naver 1200x628 → 500KB</span>
+Naver:<span style="color:#f9a8d4;">1250x560</span>:<span style="color:#93c5fd;">250</span>      <span class="comment"># Naver 1250x560 → 250KB</span>
+블라인드:<span style="color:#f9a8d4;">1200x628</span>:<span style="color:#93c5fd;">100</span>   <span class="comment"># 블라인드 피드배너 → 100KB</span>
+블라인드:<span style="color:#f9a8d4;">1250x560</span>:<span style="color:#93c5fd;">200</span>   <span class="comment"># 블라인드 게시글배너 → 200KB</span></div>
+          <button class="copy-btn copy-block-btn">복사</button>
+        </div>
+        <div class="note info">
+          <span class="note-icon">💡</span>
+          <span>파일명에 사이즈가 없으면 자동으로 건너뛰어요. 예: <span class="inline-code">Naver_배너.jpg</span> → 건너뜀 / <span class="inline-code">Naver_1200x628_배너.jpg</span> → 500KB 압축</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-badge" style="background:#534AB7;">예시</div>
+        <div class="step-card-title">팀원별 config.txt 작성 예시</div>
+      </div>
+      <div class="step-card-body">
+        <p>각자 담당 매체에 맞게 아래처럼 작성하면 돼요.</p>
+        <div class="code-wrap">
+          <div class="code-block"><span class="comment"># ① 담당 매체 목록</span>
+<span class="flag">MEDIA</span>=Naver,블라인드,Kakao
+
+<span class="comment"># ② 매체 전체 용량 제한</span>
+Kakao:500
+
+<span class="comment"># ③ 사이즈별 용량 제한</span>
+Naver:1200x628:500
+Naver:1250x560:250
+Naver:1200x1200:800
+블라인드:1200x628:100
+블라인드:1250x560:200</div>
+          <button class="copy-btn copy-block-btn">복사</button>
+        </div>
+        <div class="note success">
+          <span class="note-icon">✅</span>
+          <span>저장 후 파일을 매체정리 폴더에 넣으면 config.txt 설정대로 자동 분류 + 압축이 적용돼요!</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<script>
+function copyCode(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '복사됨 ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+document.querySelectorAll('.copy-block-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const block = this.closest('.code-wrap').querySelector('.code-block');
+    const text = block.innerText || block.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      this.textContent = '복사됨 ✓';
+      this.classList.add('copied');
+      setTimeout(() => { this.textContent = '복사'; this.classList.remove('copied'); }, 1800);
+    });
+  });
+});
+</script>
+</body>
+</html>
